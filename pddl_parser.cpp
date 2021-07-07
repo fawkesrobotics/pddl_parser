@@ -19,7 +19,7 @@
  *  Read the full text in the LICENSE.GPL file in the doc directory.
  */
 
-#include "pddl_parser.h"
+#include <pddl_parser/pddl_parser.h>
 
 #include <fstream>
 #include <streambuf>
