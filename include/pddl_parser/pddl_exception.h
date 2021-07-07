@@ -23,7 +23,7 @@
 
 #include "pddl_ast.h"
 
-#include <core/exception.h>
+#include <exception>
 
 #include <string>
 
@@ -42,38 +42,30 @@ enum PddlErrorType {
  * Exception thrown by the parser if an error occurs during parsing.
  */
 
-class PddlParserException : public fawkes::Exception
+class PddlParserException : public std::exception
 {
 public:
-	/** Constructor.
-    * @param msg A message describing the error.
-    * @param error_type A classification of the error.
-    */
-	PddlParserException(const char *         msg,
-	                    const PddlErrorType &error_type = PddlErrorType::UNKNOWN_ERROR)
-	: fawkes::Exception(msg), error_type(error_type)
-	{
-	}
 
 	const char *
 	what() const throw() override
 	{
-		if (messages != NULL) {
-			return messages->msg;
+		if (msg != "") {
+			return msg.c_str();
 		} else {
-			return "Uknown Error";
+			return "Unknown Error";
 		}
 	}
 	/** Constructor with a string message.
-   * This wraps the constructor with a char* message for usage with std::string.
    * @param msg A message describing the error.
     * @param error_type A classification of the error.
    */
 	PddlParserException(const std::string &  msg,
 	                    const PddlErrorType &error_type = PddlErrorType::UNKNOWN_ERROR)
-	: fawkes::Exception(msg.c_str()), error_type(error_type)
+	: msg(msg), error_type(error_type)
 	{
 	}
+	/** Error message. */
+	std::string msg;
 	/** Classification of the error to easy distinguish between error cases. */
 	const PddlErrorType error_type;
 };
@@ -87,17 +79,7 @@ class PddlSemanticsException : public PddlParserException
 public:
 	/** Position of the error to generate a helpful error message. */
 	const iterator_type pos;
-	/** Constructor.
-    * @param msg A message describing the error.
-    * @param error_type A classification of the error.
-    * @param pos The position in the parsed string where the error occurs.
-    */
-	PddlSemanticsException(const char *msg, const PddlErrorType &error_type, const iterator_type &pos)
-	: PddlParserException(msg, error_type), pos(pos)
-	{
-	}
 	/** Constructor with a string message.
-   * This wraps the constructor with a char* message for usage with std::string.
    * @param msg A message describing the error.
    * @param error_type A classification of the error.
    * @param pos The position in the parsed string where the error occurs.
@@ -105,7 +87,7 @@ public:
 	PddlSemanticsException(const std::string &  msg,
 	                       const PddlErrorType &error_type,
 	                       const iterator_type &pos)
-	: PddlParserException(msg.c_str(), error_type), pos(pos)
+	: PddlParserException(msg, error_type), pos(pos)
 	{
 	}
 };
