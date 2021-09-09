@@ -28,15 +28,6 @@
 #include <string>
 
 namespace pddl_parser {
-enum PddlErrorType {
-	TYPE_ERROR,
-	SYNTAX_ERROR,
-	PREDICATE_ERROR,
-	EXPRESSION_ERROR,
-	CONSTANT_ERROR,
-	PARAMETER_ERROR,
-	UNKNOWN_ERROR
-};
 
 /** @class PddlParserException <pddl_parser/pddl_exception.h>
  * Exception thrown by the parser if an error occurs during parsing.
@@ -57,17 +48,21 @@ public:
 	}
 	/** Constructor with a string message.
    * @param msg A message describing the error.
-    * @param error_type A classification of the error.
    */
-	PddlParserException(const std::string &  msg,
-	                    const PddlErrorType &error_type = PddlErrorType::UNKNOWN_ERROR)
-	: msg(msg), error_type(error_type)
+	PddlParserException(const std::string &msg) : msg(msg)
 	{
 	}
+
+	void prepend(const std::string &prefix) {
+		msg = prefix + msg;
+	}
+	void append(const std::string &suffix) {
+		msg = msg + suffix;
+	}
+
+private:
 	/** Error message. */
 	std::string msg;
-	/** Classification of the error to easy distinguish between error cases. */
-	const PddlErrorType error_type;
 };
 
 /** @class PddlSemanticsException <pddl_parser/pddl_exception.h>
@@ -79,17 +74,69 @@ class PddlSemanticsException : public PddlParserException
 public:
 	/** Position of the error to generate a helpful error message. */
 	const iterator_type pos;
-	/** Constructor with a string message.
-   * @param msg A message describing the error.
-   * @param error_type A classification of the error.
-   * @param pos The position in the parsed string where the error occurs.
-   */
-	PddlSemanticsException(const std::string &  msg,
-	                       const PddlErrorType &error_type,
-	                       const iterator_type &pos)
-	: PddlParserException(msg, error_type), pos(pos)
+	/** Constructor.
+    * @param msg A message describing the error.
+    * @param pos The position in the parsed string where the error occurs.
+    */
+	PddlSemanticsException(const char *msg, const iterator_type &pos)
+	: PddlParserException(msg), pos(pos)
 	{
 	}
+	/** Constructor with a string message.
+   * This wraps the constructor with a char* message for usage with std::string.
+   * @param msg A message describing the error.
+   * @param pos The position in the parsed string where the error occurs.
+   */
+	PddlSemanticsException(const std::string &msg, const iterator_type &pos)
+	: PddlParserException(msg.c_str()), pos(pos)
+	{
+	}
+};
+
+/** @class PddlTypeException <pddl_parser/pddl_exception.h>
+ * Exception thrown by the parser if declared type does not match the defined
+ * one.
+ */
+class PddlTypeException : public PddlSemanticsException
+{
+	using PddlSemanticsException::PddlSemanticsException;
+};
+/** @class PddlSyntaxException <pddl_parser/pddl_exception.h>
+ * Exception thrown by the parser if there is a syntax error.
+ */
+class PddlSyntaxException : public PddlSemanticsException
+{
+	using PddlSemanticsException::PddlSemanticsException;
+};
+/** @class PddlPredicateException <pddl_parser/pddl_exception.h>
+ * Exception thrown by the parser if a declared relation does not match the
+ * defined predicate.
+ */
+class PddlPredicateException : public PddlSemanticsException
+{
+	using PddlSemanticsException::PddlSemanticsException;
+};
+/** @class PddlExpressionException <pddl_parser/pddl_exception.h>
+ * Exception thrown by the parser if an expression is invalid.
+ */
+class PddlExpressionException : public PddlSemanticsException
+{
+	using PddlSemanticsException::PddlSemanticsException;
+};
+/** @class PddlConstantException <pddl_parser/pddl_exception.h>
+ * Exception thrown by the parser if a declared constant does not match a
+ * defined one.
+ */
+class PddlConstantException : public PddlSemanticsException
+{
+	using PddlSemanticsException::PddlSemanticsException;
+};
+/** @class PddlParameterException <pddl_parser/pddl_exception.h>
+ * Exception thrown by the parser if a parameter mismatch is encountered.
+ */
+class PddlParameterException : public PddlSemanticsException
+{
+	using PddlSemanticsException::PddlSemanticsException;
 };
 
 } // end namespace pddl_parser

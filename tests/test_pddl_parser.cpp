@@ -30,206 +30,413 @@ using namespace pddl_parser;
 
 TEST(PddlParserTest, TypingTest)
 {
-	auto benchmarks = {"(define (domain action-arg-pred-missmatch)       \n\
-	(:requirements :strips :typing)             \n\
-	(:types                                     \n\
-	 	obj-a - object                            \n\
-	 	obj-b - object                            \n\
-	 )                                          \n\
-	(:predicates                                \n\
-	 	(pred ?r - obj-a)                         \n\
-	 )                                          \n\
-	(:action test-action                        \n\
-	 :parameters (?t - obj-b)                   \n\
-	 :precondition (pred ?t)                    \n\
-	 :effect (not (pred ?t))                    \n\
-	 )                                          \n\
-)",
-	                   "(define (domain typing-disabled-but-type-defined) \n\
-	(:requirements :strips)                     \n\
-	(:types                                     \n\
-	 	obj-a - object                            \n\
-	 )                                          \n\
-	(:predicates                                \n\
-	 	(pred ?r)                                 \n\
-	 )                                          \n\
-	(:action test-action                        \n\
-	 :parameters (?t)                           \n\
-	 :precondition (pred ?t)                    \n\
-	 :effect (not (pred ?t))                    \n\
-	 )                                          \n\
-)",
-	                   "(define (domain typing-disabled-but-type-constant) \n\
-	(:requirements :strips)                     \n\
-	(:constants                                 \n\
-	 	TEST_CONST - object                       \n\
-	 )                                          \n\
-	(:predicates                                \n\
-	 	(pred ?r)                                 \n\
-	 )                                          \n\
-	(:action test-action                        \n\
-	 :parameters (?t)                           \n\
-	 :precondition (pred ?t)                    \n\
-	 :effect (not (pred ?t))                    \n\
-	 )                                          \n\
-)",
-	                   "(define (domain typing-disabled-but-type-param) \n\
-	(:requirements :strips)                     \n\
-	(:predicates                                \n\
-	 	(pred ?r)                                 \n\
-	 )                                          \n\
-	(:action test-action                        \n\
-	 :parameters (?t - object)                  \n\
-	 :precondition (pred ?t)                    \n\
-	 :effect (not (pred ?t))                    \n\
-	 )                                          \n\
-)",
-	                   "(define (domain action-unknown-type-in-pred)     \n\
-	(:requirements :strips :typing)             \n\
-	(:types                                     \n\
-	 	obj-a - object                            \n\
-	 )                                          \n\
-	(:predicates                                \n\
-	 	(pred ?r - obj-b)                         \n\
-	 )                                          \n\
-	(:action test-action                        \n\
-	 :parameters (?t - obj-a)                   \n\
-	 :precondition (pred ?t)                    \n\
-	 :effect (not (pred ?t))                    \n\
-	 )                                          \n\
-)",
-	                   "(define (domain action-unknown-type-in-param)    \n\
-	(:requirements :strips :typing)             \n\
-	(:types                                     \n\
-	 	obj-a - object                            \n\
-	 )                                          \n\
-	(:predicates                                \n\
-	 	(pred ?r - obj-a)                         \n\
-	 )                                          \n\
-	(:action test-action                        \n\
-	 :parameters (?t - obj-b)                   \n\
-	 :precondition (pred ?t)                    \n\
-	 :effect (not (pred ?t))                    \n\
-	 )                                          \n\
-)",
-	                   "(define (domain action-unknown-type-in-constant) \n\
-	(:requirements :strips :typing)             \n\
-	(:types                                     \n\
-	 	obj-a - object                            \n\
-	 )                                          \n\
-	(:constants                                 \n\
-	 	TEST_CONST - obj-b                        \n\
-	 )                                          \n\
-	(:predicates                                \n\
-	 	(pred ?r - obj-a)                         \n\
-	 )                                          \n\
-	(:action test-action                        \n\
-	 :parameters (?t - obj-a)                   \n\
-	 :precondition (pred ?t)                    \n\
-	 :effect (not (pred ?t))                    \n\
-	 )                                          \n\
-)",
-	                   "(define (domain action-constant-missmatch)       \n\
-	(:requirements :strips :typing)             \n\
-	(:types                                     \n\
-	 	obj-a - object                            \n\
-	 	obj-b - object                            \n\
-	 )                                          \n\
-	(:constants                                 \n\
-	 	TEST_CONST - obj-b                        \n\
-	 )                                          \n\
-	(:predicates                                \n\
-	 	(pred ?r - obj-a)                         \n\
-	 )                                          \n\
-	(:action test-action                        \n\
-	 :parameters (?t - obj-a)                   \n\
-	 :precondition (pred TEST_CONST)            \n\
-	 :effect (not (pred ?t))                    \n\
-	 )                                          \n\
-)"};
+	auto benchmarks = {R"delim(
+(define (domain action-arg-pred-missmatch)
+	(:requirements :strips :typing)
+	(:types
+		obj-a - object
+		obj-b - object
+	 )
+	(:predicates
+		(pred ?r - obj-a)
+	 )
+	(:action test-action
+	 :parameters (?t - obj-b)
+	 :precondition (pred ?t)
+	 :effect (not (pred ?t))
+	)
+))delim",
+	                   R"delim(
+	(define (domain typing-disabled-but-type-defined)
+	(:requirements :strips)
+	(:types
+		obj-a - object
+	)
+	(:predicates
+		(pred ?r)
+	)
+	(:action test-action
+	 :parameters (?t)
+	 :precondition (pred ?t)
+	 :effect (not (pred ?t))
+	)
+))delim",
+	                   R"delim(
+(define (domain typing-disabled-but-type-constant)
+	(:requirements :strips)
+	(:constants
+		TEST_CONST - object
+	 )
+	(:predicates
+		(pred ?r)
+	 )
+	(:action test-action
+	 :parameters (?t)
+	 :precondition (pred ?t)
+	 :effect (not (pred ?t))
+	)
+))delim",
+	                   R"delim(
+(define (domain typing-disabled-but-type-param)
+	(:requirements :strips)
+	(:predicates
+		(pred ?r)
+	 )
+	(:action test-action
+	 :parameters (?t - object)
+	 :precondition (pred ?t)
+	 :effect (not (pred ?t))
+	)
+))delim",
+	                   R"delim(
+(define (domain action-unknown-type-in-pred)
+	(:requirements :strips :typing)
+	(:types
+		obj-a - object
+	 )
+	(:predicates
+		(pred ?r - obj-b)
+	 )
+	(:action test-action
+	 :parameters (?t - obj-a)
+	 :precondition (pred ?t)
+	 :effect (not (pred ?t))
+	)
+))delim",
+	                   R"delim(
+(define (domain action-unknown-type-in-param)
+	(:requirements :strips :typing)
+	(:types
+		obj-a - object
+	 )
+	(:predicates
+		(pred ?r - obj-a)
+	 )
+	(:action test-action
+	 :parameters (?t - obj-b)
+	 :precondition (pred ?t)
+	 :effect (not (pred ?t))
+	)
+))delim",
+	                   R"delim(
+(define (domain action-unknown-type-in-constant)
+	(:requirements :strips :typing)
+	(:types
+		obj-a - object
+	 )
+	(:constants
+		TEST_CONST - obj-b
+	 )
+	(:predicates
+		(pred ?r - obj-a)
+	 )
+	(:action test-action
+	 :parameters (?t - obj-a)
+	 :precondition (pred ?t)
+	 :effect (not (pred ?t))
+	)
+))delim",
+	                   R"delim(
+(define (domain action-constant-missmatch)
+	(:requirements :strips :typing)
+	(:types
+		obj-a - object
+		obj-b - object
+	 )
+	(:constants
+		TEST_CONST - obj-b
+	 )
+	(:predicates
+		(pred ?r - obj-a)
+	 )
+	(:action test-action
+	 :parameters (?t - obj-a)
+	 :precondition (pred TEST_CONST)
+	 :effect (not (pred ?t))
+	)
+))delim"};
 	for (const auto &s : benchmarks) {
-		try {
-			PddlParser p;
-			p.parseDomain(s);
-			FAIL() << s << "\n expected type error";
-		} catch (PddlParserException &e) {
-			if (e.error_type != PddlErrorType::TYPE_ERROR) {
-				FAIL() << s << "\n failed with error " << e.what();
-			} else {
-			}
-		}
+		EXPECT_THROW(
+		  {
+			  PddlParser p;
+			  p.parseDomain(s);
+		  },
+		  PddlTypeException);
 	}
-	SUCCEED() << " got expected type errors ";
 }
 
 TEST(PddlParserTest, MinimalDomain)
 {
-	try {
-		PddlParser p;
-		p.parseDomain("(define (domain test-domain)              \n\
-	(:requirements)                  \n\
-	(:predicates                     \n\
-		(pred)                         \n\
-	 )                               \n\
-	(:action test-action             \n\
-	 :parameters (?t)                \n\
-	 :precondition (pred)            \n\
-	 :effect (not (pred))            \n\
-	 )                               \n\
-)");
-		SUCCEED() << "Minimal domain parsed ";
-	} catch (PddlParserException const &e) {
-		FAIL() << " Unexpected Exception: " << e.what();
-	}
+	PddlParser p;
+	Domain     d;
+	EXPECT_NO_THROW(d = p.parseDomain(R"delim(
+(define (domain test-domain)
+	(:requirements)
+	(:predicates
+		(pred)
+	 )
+	(:action test-action
+	 :parameters (?t)
+	 :precondition (pred)
+	 :effect (not (pred))
+	)
+))delim"););
+
+	ASSERT_EQ(d.requirements.size(), 0);
+	ASSERT_EQ(d.types.size(), 0);
+	ASSERT_EQ(d.constants.size(), 0);
+	ASSERT_EQ(d.predicates.size(), 1);
+	ASSERT_EQ(d.functions.size(), 0);
+	ASSERT_EQ(d.actions.size(), 1);
+	ASSERT_EQ(d.actions[0].name, "test-action");
+	ASSERT_EQ(d.actions[0].action_params.size(), 1);
+	// action precondition correctly parsed?
+	ASSERT_EQ(d.actions[0].precondition.type, ExpressionType::PREDICATE);
+	ASSERT_EQ(boost::get<Predicate>(d.actions[0].precondition.expression).function, "pred");
+	ASSERT_EQ(boost::get<Predicate>(d.actions[0].precondition.expression).arguments.size(), 0);
+	// action effect correctly parsed?
+	ASSERT_EQ(d.actions[0].effect.type, ExpressionType::BOOL);
+	ASSERT_EQ(boost::get<Predicate>(d.actions[0].effect.expression).function, "not");
+	ASSERT_EQ(boost::get<Predicate>(d.actions[0].effect.expression).arguments.size(), 1);
+	ASSERT_EQ(boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].type,
+	          ExpressionType::PREDICATE);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	            .function,
+	          "pred");
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	            .arguments.size(),
+	          0);
 }
 
 TEST(PddlParserTest, DurativeAction)
 {
-	try {
-		PddlParser p;
-		p.parseDomain("(define (domain test-durative-action)   \n\
-	(:requirements :strips :durative-actions)    \n\
-	(:predicates                                 \n\
-		(pred ?r)                                  \n\
-	 )                                           \n\
-	(:durative-action test-action                \n\
-	 :parameters (?t)                            \n\
-	 :duration (= ?duration 5.5)                 \n\
-	 :condition (and (at start (pred ?t))        \n\
-										(over all (pred ?t)))      \n\
-	 :effect (and (at end (not (pred ?t)))       \n\
-	             (at start (pred ?t)))           \n\
-	 )                                           \n\
-)");
-		SUCCEED() << " Durative domain parsed ";
-	} catch (PddlParserException const &e) {
-		FAIL() << " Unexpected Exception: " << e.what();
-	}
+	PddlParser p;
+	Domain     d;
+	EXPECT_NO_THROW(d = p.parseDomain(R"delim(
+(define (domain test-durative-action)
+	(:requirements :strips :durative-actions)
+	(:predicates
+		(pred ?r)
+	)
+	(:durative-action test-action
+	 :parameters (?t)
+	 :duration (= ?duration 5.5)
+	 :condition (and (at start (pred ?t))
+		               (over all (pred ?t)))
+	 :effect (and (at end (not (pred ?t)))
+	              (at start (pred ?t)))
+	)
+))delim"););
+	ASSERT_EQ(d.requirements.size(), 2);
+	ASSERT_EQ(d.types.size(), 0);
+	ASSERT_EQ(d.constants.size(), 0);
+	ASSERT_EQ(d.predicates.size(), 1);
+	ASSERT_EQ(d.functions.size(), 0);
+	ASSERT_EQ(d.actions.size(), 1);
+	ASSERT_EQ(d.actions[0].name, "test-action");
+	ASSERT_EQ(d.actions[0].duration.type, ExpressionType::VALUE);
+	ASSERT_EQ(boost::get<Atom>(d.actions[0].duration.expression), "5.5");
+	ASSERT_EQ(d.actions[0].action_params.size(), 1);
+	// action precondition correctly parsed?
+	ASSERT_EQ(d.actions[0].precondition.type, ExpressionType::BOOL);
+	ASSERT_EQ(boost::get<Predicate>(d.actions[0].precondition.expression).function, "and");
+	ASSERT_EQ(boost::get<Predicate>(d.actions[0].precondition.expression).arguments.size(), 2);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].precondition.expression).arguments[0].expression)
+	            .function,
+	          "at start");
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].precondition.expression).arguments[0].expression)
+	            .arguments.size(),
+	          1);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].precondition.expression).arguments[0].expression)
+	            .arguments[0]
+	            .type,
+	          ExpressionType::PREDICATE);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].precondition.expression).arguments[0].expression)
+	              .arguments[0]
+	              .expression)
+	            .function,
+	          "pred");
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].precondition.expression).arguments[0].expression)
+	              .arguments[0]
+	              .expression)
+	            .arguments.size(),
+	          1);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].precondition.expression).arguments[0].expression)
+	              .arguments[0]
+	              .expression)
+	            .arguments[0]
+	            .type,
+	          ExpressionType::ATOM);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].precondition.expression).arguments[1].expression)
+	            .function,
+	          "over all");
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].precondition.expression).arguments[1].expression)
+	            .arguments.size(),
+	          1);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].precondition.expression).arguments[1].expression)
+	            .arguments[0]
+	            .type,
+	          ExpressionType::PREDICATE);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].precondition.expression).arguments[1].expression)
+	              .arguments[0]
+	              .expression)
+	            .function,
+	          "pred");
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].precondition.expression).arguments[1].expression)
+	              .arguments[0]
+	              .expression)
+	            .arguments.size(),
+	          1);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].precondition.expression).arguments[1].expression)
+	              .arguments[0]
+	              .expression)
+	            .arguments[0]
+	            .type,
+	          ExpressionType::ATOM);
+	// action effect correctly parsed?
+	ASSERT_EQ(boost::get<Predicate>(d.actions[0].effect.expression).function, "and");
+	ASSERT_EQ(boost::get<Predicate>(d.actions[0].effect.expression).arguments.size(), 2);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	            .function,
+	          "at end");
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	            .arguments.size(),
+	          1);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	            .arguments[0]
+	            .type,
+	          ExpressionType::BOOL);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	              .arguments[0]
+	              .expression)
+	            .function,
+	          "not");
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	              .arguments[0]
+	              .expression)
+	            .arguments.size(),
+	          1);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	              .arguments[0]
+	              .expression)
+	            .arguments[0]
+	            .type,
+	          ExpressionType::PREDICATE);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(
+	                boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	                .arguments[0]
+	                .expression)
+	              .arguments[0]
+	              .expression)
+	            .function,
+	          "pred");
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(
+	                boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	                .arguments[0]
+	                .expression)
+	              .arguments[0]
+	              .expression)
+	            .arguments.size(),
+	          1);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(
+	                boost::get<Predicate>(d.actions[0].effect.expression).arguments[0].expression)
+	                .arguments[0]
+	                .expression)
+	              .arguments[0]
+	              .expression)
+	            .arguments[0]
+	            .type,
+	          ExpressionType::ATOM);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].effect.expression).arguments[1].expression)
+	            .function,
+	          "at start");
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].effect.expression).arguments[1].expression)
+	            .arguments.size(),
+	          1);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(d.actions[0].effect.expression).arguments[1].expression)
+	            .arguments[0]
+	            .type,
+	          ExpressionType::PREDICATE);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].effect.expression).arguments[1].expression)
+	              .arguments[0]
+	              .expression)
+	            .function,
+	          "pred");
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].effect.expression).arguments[1].expression)
+	              .arguments[0]
+	              .expression)
+	            .arguments.size(),
+	          1);
+	ASSERT_EQ(boost::get<Predicate>(
+	            boost::get<Predicate>(
+	              boost::get<Predicate>(d.actions[0].effect.expression).arguments[1].expression)
+	              .arguments[0]
+	              .expression)
+	            .arguments[0]
+	            .type,
+	          ExpressionType::ATOM);
 }
 
-TEST(PddlParserTest, Functionss)
+TEST(PddlParserTest, Functions)
 {
-	try {
-		PddlParser p;
-		p.parseDomain("(define (domain test-functions)   \n\
-	(:requirements :strips :numeric-fluents)     \n\
-	(:predicates                                 \n\
-		(pred ?r)                                  \n\
-	 )                                           \n\
-	(:functions                                  \n\
-	 (func ?r)                                   \n\
-	)                                            \n\
-	(:action test-action                         \n\
-	 :parameters (?t)                            \n\
-	 :precondition (and (pred ?t)                \n\
-									 (= (func ?t) 1.1))          \n\
-	 :effect (increase (pred ?t) (pred ?t))      \n\
-	 )                                           \n\
-)");
-		SUCCEED() << " Function domain parsed ";
-	} catch (PddlParserException const &e) {
-		FAIL() << " Unexpected Exception: " << e.what();
-	}
+	EXPECT_NO_THROW(PddlParser p; p.parseDomain(R"delim(
+(define (domain test-functions)
+	(:requirements :strips :numeric-fluents)
+	(:predicates
+		(pred ?r)
+	 )
+	(:functions
+	 (func ?r)
+	)
+	(:action test-action
+	 :parameters (?t)
+	 :precondition (and (pred ?t)
+	                    (= (func ?t) 1.1))
+	 :effect (increase (pred ?t) (pred ?t))
+	 )
+))delim"););
 }
 TEST(PddlParserTest, IPC2014)
 {
@@ -244,18 +451,11 @@ TEST(PddlParserTest, IPC2014)
 		}
 	}
 	for (const auto &s : domains) {
-		try {
-			std::ifstream t(s);
-			if (t.fail()) {
-				FAIL() << " Failed to read file: " << s;
-			}
-			std::stringstream buffer;
-			buffer << t.rdbuf();
-			PddlParser p;
-			p.parseDomain(buffer.str());
-		} catch (PddlParserException const &e) {
-			FAIL() << " Unexpected Exception in file:\n" << s << "\n" << e.what();
-		}
-		SUCCEED() << " All files parsed without failure.";
+		EXPECT_NO_THROW(std::ifstream t(s); if (t.fail()) {
+			FAIL() << " Failed to read file: " << s;
+		} std::stringstream buffer;
+		                buffer << t.rdbuf();
+		                PddlParser p;
+		                p.parseDomain(buffer.str()););
 	}
 }
