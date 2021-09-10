@@ -9,7 +9,7 @@ VCS:        {{{ git_dir_vcs }}}
 
 Source: {{{ git_dir_pack }}}
 
-BuildRequires: g++ boost-devel cmake
+BuildRequires: g++ boost-devel cmake spdlog-devel
 
 %description
 A C++ PDDL parser utilizing boost spirit. Provides syntactic and semantic
