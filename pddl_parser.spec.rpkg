@@ -1,6 +1,6 @@
 Name:       {{{ git_dir_name }}}
 Release:    2021
-Version:    {{{ git_dir_version lead=0.3 }}}%{?dist}
+Version:    {{{ git_dir_version lead=0.4 }}}%{?dist}
 Summary:    A C++ PDDL parser utilizing boost spirit.
 
 License:    GPLv2+
@@ -11,9 +11,17 @@ Source: {{{ git_dir_pack }}}
 
 BuildRequires: g++ boost-devel cmake spdlog-devel
 
+%package devel
+#Requires:
+Summary: pddl_parser development files
+Provides: pddl_parser-devel
+
 %description
 A C++ PDDL parser utilizing boost spirit. Provides syntactic and semantic
 checks. Tested by parsing all problems from the IPC 2014.
+
+%description devel
+This package contains necessary headers files for integrating the pddl_parser
 
 %prep
 {{{ git_dir_setup_macro }}}
@@ -30,8 +38,10 @@ checks. Tested by parsing all problems from the IPC 2014.
 
 %files
 %doc
-%{_includedir}/*
 %{_libdir}/*
+
+%files devel
+%{_includedir}/*
 
 %changelog
 {{{ git_dir_changelog }}}
