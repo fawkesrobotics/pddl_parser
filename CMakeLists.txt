@@ -4,9 +4,10 @@ project(pddl_parser VERSION 0.9.0
 	DESCRIPTION "Basic PDDL parser based on boost spirit")
 
 find_package(Boost REQUIRED COMPONENTS system)
+find_package(spdlog REQUIRED)
 
 add_library(pddl_parser SHARED pddl_parser.cpp pddl_semantics.cpp)
-target_link_libraries(pddl_parser PUBLIC Boost::boost Boost::system)
+target_link_libraries(pddl_parser PUBLIC Boost::boost Boost::system spdlog::spdlog)
 target_include_directories(
   pddl_parser PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 set_target_properties(pddl_parser PROPERTIES SOVERSION
@@ -47,6 +48,7 @@ endif()
 set(PKG_CONFIG_PUBLIC_LIBS " -lboost_system")
 set(PKG_CONFIG_PRIVATE_LIBS "")
 set(PKG_CONFIG_CFLAGS "")
+set(PKG_CONFIG_REQUIRES "spdlog")
 configure_file(pddl_parser.pc.in ${CMAKE_CURRENT_BINARY_DIR}/pddl_parser.pc @ONLY)
 
 # optionally check for GTest

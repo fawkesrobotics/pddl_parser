@@ -1,6 +1,6 @@
 Name:       {{{ git_dir_name }}}
 Release:    2021
-Version:    {{{ git_dir_version lead=0.2 }}}%{?dist}
+Version:    {{{ git_dir_version lead=0.3 }}}%{?dist}
 Summary:    A C++ PDDL parser utilizing boost spirit.
 
 License:    GPLv2+

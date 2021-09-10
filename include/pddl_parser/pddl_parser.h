@@ -1,9 +1,9 @@
 
-/***************************************************************************     
+/***************************************************************************
  *  pddl_parser.h
- *     
+ *
  *  Created: Fri 19 May 2017 11:10:30 CEST
- *  Copyright  2017  Matthias Loebach     
+ *  Copyright  2017  Matthias Loebach
  ****************************************************************************/
 
 /*  This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@ namespace pddl_parser {
 class PddlParser
 {
 public:
-	static Domain  parseDomain(const std::string &pddl_domain);
+	static Domain  parseDomain(const std::string &pddl_domain, bool log_warnings = true);
 	static Problem parseProblem(const std::string &pddl_problem);
 
 private:

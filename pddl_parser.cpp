@@ -23,6 +23,7 @@
 
 #include <fstream>
 #include <streambuf>
+#include <spdlog/spdlog.h>
 
 namespace pddl_parser {
 
@@ -69,7 +70,7 @@ PddlParser::getErrorContext(const iterator_type &start_it,
  * @see Domain
  */
 Domain
-PddlParser::parseDomain(const std::string &pddl_domain)
+PddlParser::parseDomain(const std::string &pddl_domain, bool log_warnings)
 {
 	typedef pddl_parser::grammar::domain_parser<iterator_type> grammar;
 	typedef pddl_parser::grammar::pddl_skipper<iterator_type>  skipper;
@@ -84,6 +85,9 @@ PddlParser::parseDomain(const std::string &pddl_domain)
 
 	try {
 		r = phrase_parse(iter, end, g, s, dom);
+		for(const auto& warn : g.warnings) {
+			SPDLOG_WARN(std::string("PDDL-Parser: " + warn));
+		}
 	} catch (qi::expectation_failure<iterator_type> const &e) {
 		using boost::spirit::basic_info_walker;
 		std::stringstream                                                   expectation;

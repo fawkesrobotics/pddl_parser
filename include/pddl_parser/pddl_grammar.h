@@ -176,6 +176,9 @@ struct domain_parser : qi::grammar<Iterator, Domain(), Skipper>
 		         > -lit(")");
 	}
 
+	/** Warnings found during parsing. */
+	std::vector<std::string>                     warnings;
+
 private:
 	/** Semantic checks for each parsed type. */
 	px::function<pddl_parser::TypeSemantics> type_semantics_;
@@ -185,7 +188,6 @@ private:
 	px::function<pddl_parser::ActionSemantics> action_semantics_;
 	/** Semantic checks for each parsed constants. */
 	px::function<pddl_parser::ConstantSemantics> constant_semantics_;
-	std::vector<std::string>                     warnings;
 	/** Named placeholder for parsing a name. */
 	qi::rule<Iterator, std::string(), Skipper> name_type;
 
