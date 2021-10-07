@@ -19,11 +19,13 @@
  *  Read the full text in the LICENSE.GPL file in the doc directory.
  */
 
+#include <pddl_parser/pddl_exception.h>
+#include <pddl_parser/pddl_grammar.h>
 #include <pddl_parser/pddl_parser.h>
+#include <spdlog/spdlog.h>
 
 #include <fstream>
 #include <streambuf>
-#include <spdlog/spdlog.h>
 
 namespace pddl_parser {
 
