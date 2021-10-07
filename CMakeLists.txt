@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.12)
 project(pddl_parser VERSION 0.9.0
 	DESCRIPTION "Basic PDDL parser based on boost spirit")
 
+add_compile_options(-W -Wall -Werror -Wextra -Wpedantic)
+
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(spdlog REQUIRED)
 
