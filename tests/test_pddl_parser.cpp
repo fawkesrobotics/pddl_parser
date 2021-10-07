@@ -17,10 +17,9 @@
  *
  *  Read the full text in the LICENSE.GPL file in the doc directory.
  */
+#include <gtest/gtest.h>
 #include <pddl_parser/pddl_exception.h>
 #include <pddl_parser/pddl_parser.h>
-
-#include <gtest/gtest.h>
 
 #include <filesystem>
 #include <fstream>
@@ -163,6 +162,26 @@ TEST(PddlParserTest, TypingTest)
 		  },
 		  PddlTypeException);
 	}
+}
+
+TEST(PddlParserTest, ParseFormula)
+{
+	PddlParser p;
+	Expression formula;
+	formula = p.parseFormula("(pred)");
+	EXPECT_EQ(formula.type, ExpressionType::PREDICATE);
+	EXPECT_EQ(boost::get<Predicate>(formula.expression).function, "pred");
+
+	formula = p.parseFormula("(and (pred1) (pred2))");
+	EXPECT_EQ(formula.type, ExpressionType::BOOL);
+	EXPECT_EQ(boost::get<Predicate>(formula.expression).function, "and");
+	ASSERT_EQ(boost::get<Predicate>(formula.expression).arguments.size(), 2);
+	EXPECT_EQ(boost::get<Predicate>(boost::get<Predicate>(formula.expression).arguments[0].expression)
+	            .function,
+	          "pred1");
+	EXPECT_EQ(boost::get<Predicate>(boost::get<Predicate>(formula.expression).arguments[1].expression)
+	            .function,
+	          "pred2");
 }
 
 TEST(PddlParserTest, MinimalDomain)

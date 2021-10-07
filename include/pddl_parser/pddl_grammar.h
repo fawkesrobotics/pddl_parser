@@ -51,6 +51,170 @@ struct pddl_skipper : public qi::grammar<Iterator>
 	qi::rule<Iterator> skip;
 };
 
+template <typename Iterator, typename Skipper = pddl_skipper<Iterator>>
+struct formula_parser : qi::grammar<Iterator, Expression(), Skipper>
+{
+	formula_parser() : formula_parser::base_type(formula)
+	{
+		using namespace qi;
+		using ascii::alnum;
+		using ascii::blank;
+		using ascii::char_;
+
+		name_type = lexeme[alnum > *(alnum | char_('-') | char_('_'))];
+
+		// _r1: domain, _r2: parent list of pairs _val is parsed into
+		type_pair =
+		  (qr::iter_pos
+		   >> qi::as<pair_strings_type>()[+name_type
+		                                  > -('-' >> (qi::as<std::vector<std::string>>()[name_type]
+		                                              | ('(' > lit("either") > *name_type > ')')))])
+		    [_val = type_semantics_(qi::_1, param_transformer_(qi::_1, qi::_2, qi::_r2), qi::_r1)];
+
+		constant_value_list = +name_type;
+		// _r1: parent list of pairs _val is parsed into
+		constant_multi_pair =
+		  (qr::iter_pos >> qi::as<pair_multi_const>()[(constant_value_list > -('-' > name_type))])
+		    [_val =
+		       constant_semantics_(qi::_1, qi::_2, qi::_r1, px::bind(&formula_parser::warnings, this))];
+
+		// _r1: parent list of pairs _val is parsed into
+		param_pair =
+		  (qr::iter_pos
+		   >> qi::as<pair_strings_type>()[+('?' > name_type)
+		                                  > -('-' >> (qi::as<std::vector<std::string>>()[name_type]
+		                                              | ('(' > lit("either") > *name_type > ')')))])
+		    [_val = param_transformer_(qi::_1, qi::_2, qi::_r1)];
+		param_pairs = +param_pair(qi::_val);
+		pred        = '(' > name_type > -param_pairs > ')';
+		predicates  = '(' > lit(":predicates") > +pred > ')';
+
+		atom    = +(graph - '(' - ')');
+		bool_op = qi::string("and") | qi::string("or") | qi::string("not");
+		comparison_op =
+		  qi::string("<") | qi::string(">") | qi::string("=") | qi::string("<=") | qi::string(">=");
+		numerical_op = qi::string("+") | qi::string("-") | qi::string("/") | qi::string("*")
+		               | qi::string("=") | string("increase") | string("decrease");
+
+		// no expectation parsing to allow proper backtracking
+		value_expression = attr(ExpressionType::VALUE) >> qi::as_string[qi::raw[qi::float_]];
+		numeric_expression =
+		  attr(ExpressionType::NUMERIC)
+		  >> qi::as<Predicate>()[atom >> *(hold[attr(ExpressionType::ATOM) >> atom])];
+		pred_expression = attr(ExpressionType::PREDICATE)
+		                  >> qi::as<Predicate>()[atom >> *(hold[attr(ExpressionType::ATOM) >> atom])];
+		bool_expression = attr(ExpressionType::BOOL) >> qi::as<Predicate>()[(bool_op >> +formula)];
+		quantified_expression =
+		  attr(ExpressionType::QUANTIFIED)
+		  >> qi::as<QuantifiedFormula>()[(qi::string("exists") | qi::string("forall")) > '('
+		                                 > param_pairs > ')' > formula];
+		cond_effect_expression = attr(ExpressionType::COND_EFFECT)
+		                         >> qi::as<Predicate>()[qi::string("when") > formula > formula];
+		durative_expression = attr(ExpressionType::DURATIVE)
+		                      >> qi::as<Predicate>()[(qi::string("at start") | qi::string("at end")
+		                                              | qi::string("over all"))
+		                                             > formula];
+		unknown_expression =
+		  attr(ExpressionType::UNKNOWN) >> atom >> *(hold[attr(ExpressionType::ATOM) >> atom]);
+		function_expression =
+		  attr(ExpressionType::NUMERIC_COMP)
+		  >> qi::as<Predicate>()[qi::as<Atom>()[comparison_op]
+		                         > (hold[formula >> value_expression]
+		                            | hold[value_expression >> formula] | hold[formula >> formula]
+		                            | +(hold[attr(ExpressionType::ATOM) >> atom]))];
+		function_change_expression =
+		  attr(ExpressionType::NUMERIC_CHANGE)
+		  >> qi::as<Predicate>()[numerical_op
+		                         > (hold[formula >> value_expression]
+		                            | hold[value_expression >> formula] | hold[formula >> formula])];
+
+		// hold to backtrack the ExpressionType
+		formula =
+		  '('
+		  >> hold[(hold[bool_expression] | hold[function_expression] | hold[function_change_expression]
+		           | hold[durative_expression] | hold[quantified_expression]
+		           | hold[cond_effect_expression] | hold[pred_expression] | hold[unknown_expression])]
+		  >> ')';
+	}
+
+	/** Warnings found during parsing. */
+	std::vector<std::string> warnings;
+
+private:
+	/** Semantic checks for each parsed type. */
+	px::function<pddl_parser::TypeSemantics> type_semantics_;
+	/** Transforms pair<vector<string>,vector<string>> to separate pair<string,string> entries in the parent vector */
+	px::function<pddl_parser::ParamTransformer> param_transformer_;
+	/** Semantic checks for each parsed action. */
+	px::function<pddl_parser::ActionSemantics> action_semantics_;
+	/** Semantic checks for each parsed constants. */
+	px::function<pddl_parser::ConstantSemantics> constant_semantics_;
+	/** Named placeholder for parsing a name. */
+	qi::rule<Iterator, std::string(), Skipper> name_type;
+
+	/** Named placeholder for parsing a domain name. */
+	qi::rule<Iterator, std::string(), Skipper> domain_name;
+
+	/** Named placeholder for parsing requirements. */
+	qi::rule<Iterator, std::vector<std::string>(), Skipper> requirements;
+
+	/** Named placeholder for parsing types. Pass the domain for semantic checks. */
+	qi::rule<Iterator, pairs_type(const Domain &), Skipper> types;
+	/** Named placeholder for parsing type pairs. Pass the domain for semantic checks. */
+	qi::rule<Iterator, pair_type(const Domain &, string_pairs_type &), Skipper> type_pair;
+
+	/** Named placeholder for parsing a list of constant values. */
+	qi::rule<Iterator, type_list(), Skipper> constant_value_list;
+	/** Named placeholder for parsing a list of predicate parameters. */
+	qi::rule<Iterator, type_list(), Skipper> predicate_params;
+	/** Named placeholder for parsing a list of typed constants. Pass the domain for semantic checks. */
+	qi::rule<Iterator, pair_multi_const(const Domain &), Skipper> constant_multi_pair;
+	/** Named placeholder for parsing a list of constants. Pass the domain for semantic checks. */
+	qi::rule<Iterator, pairs_multi_consts(const Domain &), Skipper> constants;
+
+	/** Named placeholder for parsing a parameter pair. */
+	qi::rule<Iterator, string_pair_type(string_pairs_type &), Skipper> param_pair;
+	/** Named placeholder for parsing a list of parameter pairs. */
+	qi::rule<Iterator, string_pairs_type(), Skipper> param_pairs;
+	/** Named placeholder for parsing a predicate type. */
+	qi::rule<Iterator, predicate_type(), Skipper> pred;
+	/** Named placeholder for parsing a list of predicate types. */
+	qi::rule<Iterator, std::vector<predicate_type>(), Skipper> predicates;
+
+	/** Named placeholder for parsing any atom. */
+	qi::rule<Iterator, Atom()> atom;
+	/** Named placeholder for parsing an atom that is a logical operator. */
+	qi::rule<Iterator, Atom()> bool_op;
+	/** Named placeholder for parsing an atom that is a comparison operator. */
+	qi::rule<Iterator, Atom()> comparison_op;
+	/** Named placeholder for parsing an atom that is a numerical operator. */
+	qi::rule<Iterator, Atom()> numerical_op;
+	/** Named placeholder for parsing a predicate. */
+	qi::rule<Iterator, Predicate(), Skipper> predicate;
+	/** Named placeholder for parsing a PDDL predicate expression. */
+	qi::rule<Iterator, Expression(), Skipper> pred_expression;
+	/** Named placeholder for parsing a PDDL value expression. */
+	qi::rule<Iterator, Expression(), Skipper> value_expression;
+	/** Named placeholder for parsing a PDDL numeric expression. */
+	qi::rule<Iterator, Expression(), Skipper> numeric_expression;
+	/** Named placeholder for parsing a PDDL function expression. */
+	qi::rule<Iterator, Expression(), Skipper> function_expression;
+	/** Named placeholder for parsing a PDDL function changing expression. */
+	qi::rule<Iterator, Expression(), Skipper> function_change_expression;
+	/** Named placeholder for parsing a PDDL bool expression. */
+	qi::rule<Iterator, Expression(), Skipper> bool_expression;
+	/** Named placeholder for parsing a PDDL durative expression. */
+	qi::rule<Iterator, Expression(), Skipper> durative_expression;
+	/** Named placeholder for parsing a PDDL quantified expression. */
+	qi::rule<Iterator, Expression(), Skipper> quantified_expression;
+	/** Named placeholder for parsing a PDDL conditional effect expression. */
+	qi::rule<Iterator, Expression(), Skipper> cond_effect_expression;
+	/** Named placeholder for parsing an arbitrary  PDDL expression, where no semantic checks can be performed. */
+	qi::rule<Iterator, Expression(), Skipper> unknown_expression;
+	/** Named placeholder for parsing a PDDL expression. */
+	qi::rule<Iterator, Expression(), Skipper> formula;
+};
+
 /** @class domain_parser
      * A Boost QI parser for a PDDL domain.
      */
@@ -177,7 +341,7 @@ struct domain_parser : qi::grammar<Iterator, Domain(), Skipper>
 	}
 
 	/** Warnings found during parsing. */
-	std::vector<std::string>                     warnings;
+	std::vector<std::string> warnings;
 
 private:
 	/** Semantic checks for each parsed type. */
