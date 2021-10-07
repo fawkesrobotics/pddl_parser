@@ -18,9 +18,8 @@
  *  Read the full text in the LICENSE.GPL file in the doc directory.
  */
 
-#include <pddl_parser/pddl_semantics.h>
-
 #include <pddl_parser/pddl_exception.h>
+#include <pddl_parser/pddl_semantics.h>
 
 #include <algorithm>
 
@@ -66,7 +65,7 @@ TypeSemantics::operator()(const iterator_type &where,
 }
 
 pair_type
-ParamTransformer::operator()(const iterator_type &    where,
+ParamTransformer::operator()(const iterator_type &,
                              const pair_strings_type &parsed,
                              string_pairs_type &      target) const
 {
