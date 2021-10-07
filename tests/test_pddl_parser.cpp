@@ -17,6 +17,7 @@
  *
  *  Read the full text in the LICENSE.GPL file in the doc directory.
  */
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <pddl_parser/pddl_exception.h>
 #include <pddl_parser/pddl_parser.h>
@@ -167,21 +168,87 @@ TEST(PddlParserTest, TypingTest)
 TEST(PddlParserTest, ParseFormula)
 {
 	PddlParser p;
-	Expression formula;
-	formula = p.parseFormula("(pred)");
-	EXPECT_EQ(formula.type, ExpressionType::PREDICATE);
-	EXPECT_EQ(boost::get<Predicate>(formula.expression).function, "pred");
-
-	formula = p.parseFormula("(and (pred1) (pred2))");
-	EXPECT_EQ(formula.type, ExpressionType::BOOL);
-	EXPECT_EQ(boost::get<Predicate>(formula.expression).function, "and");
-	ASSERT_EQ(boost::get<Predicate>(formula.expression).arguments.size(), 2);
-	EXPECT_EQ(boost::get<Predicate>(boost::get<Predicate>(formula.expression).arguments[0].expression)
-	            .function,
-	          "pred1");
-	EXPECT_EQ(boost::get<Predicate>(boost::get<Predicate>(formula.expression).arguments[1].expression)
-	            .function,
-	          "pred2");
+	{
+		const auto formula = p.parseFormula("(pred)");
+		EXPECT_EQ(formula.type, ExpressionType::PREDICATE);
+		EXPECT_EQ(boost::get<Predicate>(formula.expression).function, "pred");
+	}
+	{
+		const auto formula = p.parseFormula("(and (pred1) (pred2))");
+		EXPECT_EQ(formula.type, ExpressionType::BOOL);
+		EXPECT_EQ(boost::get<Predicate>(formula.expression).function, "and");
+		ASSERT_EQ(boost::get<Predicate>(formula.expression).arguments.size(), 2);
+		EXPECT_EQ(boost::get<Predicate>(
+		            boost::get<Predicate>(formula.expression).arguments[0].expression)
+		            .function,
+		          "pred1");
+		EXPECT_EQ(boost::get<Predicate>(
+		            boost::get<Predicate>(formula.expression).arguments[1].expression)
+		            .function,
+		          "pred2");
+	}
+	{
+		const auto formula = p.parseFormula("(or (pred1) (pred2))");
+		EXPECT_EQ(formula.type, ExpressionType::BOOL);
+		EXPECT_EQ(boost::get<Predicate>(formula.expression).function, "or");
+		ASSERT_EQ(boost::get<Predicate>(formula.expression).arguments.size(), 2);
+		EXPECT_EQ(boost::get<Predicate>(
+		            boost::get<Predicate>(formula.expression).arguments[0].expression)
+		            .function,
+		          "pred1");
+		EXPECT_EQ(boost::get<Predicate>(
+		            boost::get<Predicate>(formula.expression).arguments[1].expression)
+		            .function,
+		          "pred2");
+	}
+	{
+		const auto formula = p.parseFormula("(exists (?x - obj) (pred ?x))");
+		EXPECT_EQ(formula.type, ExpressionType::QUANTIFIED);
+		EXPECT_EQ(boost::get<QuantifiedFormula>(formula.expression).quantifier, "exists");
+		EXPECT_THAT(boost::get<QuantifiedFormula>(formula.expression).args,
+		            testing::ContainerEq(
+		              std::vector<std::pair<std::string, std::string>>{{{"x", "obj"}}}));
+		EXPECT_EQ(boost::get<QuantifiedFormula>(formula.expression).sub_expr.type,
+		          ExpressionType::PREDICATE);
+		const auto sub =
+		  boost::get<Predicate>(boost::get<QuantifiedFormula>(formula.expression).sub_expr.expression);
+		EXPECT_EQ(sub.function, "pred");
+		ASSERT_EQ(sub.arguments.size(), 1);
+		EXPECT_EQ(sub.arguments[0].type, ExpressionType::ATOM);
+		EXPECT_EQ(boost::get<Atom>(sub.arguments[0].expression), "?x");
+	}
+	{
+		const auto formula = p.parseFormula("(forall (?x - obj) (pred ?x))");
+		EXPECT_EQ(formula.type, ExpressionType::QUANTIFIED);
+		EXPECT_EQ(boost::get<QuantifiedFormula>(formula.expression).quantifier, "forall");
+		EXPECT_THAT(boost::get<QuantifiedFormula>(formula.expression).args,
+		            testing::ContainerEq(
+		              std::vector<std::pair<std::string, std::string>>{{{"x", "obj"}}}));
+		const auto sub =
+		  boost::get<Predicate>(boost::get<QuantifiedFormula>(formula.expression).sub_expr.expression);
+		EXPECT_EQ(sub.function, "pred");
+		ASSERT_EQ(sub.arguments.size(), 1);
+		EXPECT_EQ(sub.arguments[0].type, ExpressionType::ATOM);
+		EXPECT_EQ(boost::get<Atom>(sub.arguments[0].expression), "?x");
+	}
+	{
+		const auto formula = p.parseFormula("(exists (?x ?y - obj ?z - obj2) (pred3 ?x ?y ?z))");
+		EXPECT_EQ(formula.type, ExpressionType::QUANTIFIED);
+		EXPECT_EQ(boost::get<QuantifiedFormula>(formula.expression).quantifier, "exists");
+		EXPECT_THAT(boost::get<QuantifiedFormula>(formula.expression).args,
+		            testing::ContainerEq(std::vector<std::pair<std::string, std::string>>{
+		              {{"x", "obj"}, {"y", "obj"}, {"z", "obj2"}}}));
+		const auto sub =
+		  boost::get<Predicate>(boost::get<QuantifiedFormula>(formula.expression).sub_expr.expression);
+		EXPECT_EQ(sub.function, "pred3");
+		ASSERT_EQ(sub.arguments.size(), 3);
+		EXPECT_EQ(sub.arguments[0].type, ExpressionType::ATOM);
+		EXPECT_EQ(boost::get<Atom>(sub.arguments[0].expression), "?x");
+		EXPECT_EQ(sub.arguments[1].type, ExpressionType::ATOM);
+		EXPECT_EQ(boost::get<Atom>(sub.arguments[1].expression), "?y");
+		EXPECT_EQ(sub.arguments[2].type, ExpressionType::ATOM);
+		EXPECT_EQ(boost::get<Atom>(sub.arguments[2].expression), "?z");
+	}
 }
 
 TEST(PddlParserTest, MinimalDomain)
