@@ -31,7 +31,7 @@ namespace pddl_parser {
 class PddlParser
 {
 public:
-	static Domain     parseDomain(const std::string &pddl_domain, bool log_warnings = true);
+	static Domain     parseDomain(const std::string &pddl_domain);
 	static Problem    parseProblem(const std::string &pddl_problem);
 	static Expression parseFormula(const std::string &pddl_formula);
 

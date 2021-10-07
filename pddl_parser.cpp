@@ -110,7 +110,7 @@ PddlParser::parseFormula(const std::string &pddl_formula)
  * @see Domain
  */
 Domain
-PddlParser::parseDomain(const std::string &pddl_domain, bool log_warnings)
+PddlParser::parseDomain(const std::string &pddl_domain)
 {
 	typedef pddl_parser::grammar::domain_parser<iterator_type> grammar;
 	typedef pddl_parser::grammar::pddl_skipper<iterator_type>  skipper;
