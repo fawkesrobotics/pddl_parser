@@ -273,10 +273,10 @@ struct domain_parser : qi::grammar<Iterator, Domain(), Skipper>
 		           | hold[durative_expression] | hold[quantified_expression]
 		           | hold[cond_effect_expression] | hold[pred_expression] | hold[unknown_expression])]
 		  >> ')';
-		temp_breakup  = lit(":temporal-breakup") > expression;
-		cond_breakup  = lit(":conditional-breakup") > expression;
+		temp_breakup  = lit(":temporal-breakup") > precondition;
+		cond_breakup  = lit(":conditional-breakup") > precondition;
 		effects       = lit(":effect") > expression;
-		preconditions = (lit(":precondition") | lit(":condition")) > expression;
+		preconditions = (lit(":precondition") | lit(":condition")) > precondition;
 		duration      = lit(":duration") > '(' > '=' > lit("?duration")
 		           > (value_expression
 		              | ('(' > (hold[function_change_expression] | hold[pred_expression]) > ')'))
@@ -376,8 +376,10 @@ private:
 	qi::rule<Iterator, Expression(), Skipper> unknown_expression;
 	/** Named placeholder for parsing a PDDL expression. */
 	qi::rule<Iterator, Expression(), Skipper> expression;
-	/** Named placeholder for parsing a PDDL precondition. */
+	/** Named placeholder for parsing a PDDL preconditions. */
 	qi::rule<Iterator, Expression(), Skipper> preconditions;
+	/** Named placeholder for parsing a PDDL precondition. */
+	formula_parser<Iterator, Skipper> precondition;
 	/** Named placeholder for parsing a PDDL effect. */
 	qi::rule<Iterator, Expression(), Skipper> effects;
 	/** Named placeholder for parsing a temporal breakup. */
