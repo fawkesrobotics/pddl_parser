@@ -22,10 +22,8 @@
 #ifndef PLUGINS_PDDL_PARSER_H_
 #define PLUGINS_PDDL_PARSER_H_
 
-#include "pddl_exception.h"
-#include "pddl_grammar.h"
+#include "pddl_ast.h"
 
-#include <boost/spirit/include/support_line_pos_iterator.hpp>
 #include <string>
 
 namespace pddl_parser {
@@ -33,8 +31,9 @@ namespace pddl_parser {
 class PddlParser
 {
 public:
-	static Domain  parseDomain(const std::string &pddl_domain, bool log_warnings = true);
-	static Problem parseProblem(const std::string &pddl_problem);
+	static Domain     parseDomain(const std::string &pddl_domain);
+	static Problem    parseProblem(const std::string &pddl_problem);
+	static Expression parseFormula(const std::string &pddl_formula);
 
 private:
 	static std::string

@@ -19,11 +19,13 @@
  *  Read the full text in the LICENSE.GPL file in the doc directory.
  */
 
+#include <pddl_parser/pddl_exception.h>
+#include <pddl_parser/pddl_grammar.h>
 #include <pddl_parser/pddl_parser.h>
+#include <spdlog/spdlog.h>
 
 #include <fstream>
 #include <streambuf>
-#include <spdlog/spdlog.h>
 
 namespace pddl_parser {
 
@@ -64,13 +66,51 @@ PddlParser::getErrorContext(const iterator_type &start_it,
 	return error_msg.str();
 }
 
+Expression
+PddlParser::parseFormula(const std::string &pddl_formula)
+{
+	typedef pddl_parser::grammar::formula_parser<iterator_type> grammar;
+	typedef pddl_parser::grammar::pddl_skipper<iterator_type>   skipper;
+	skipper                                                     s;
+	Expression                                                  formula;
+	bool                                                        r = false;
+	iterator_type                                               iter(pddl_formula.begin());
+	iterator_type                                               end(pddl_formula.end());
+	grammar                                                     g;
+
+	try {
+		r = phrase_parse(iter, end, g, s, formula);
+		for (const auto &warn : g.warnings) {
+			SPDLOG_WARN(std::string("PDDL-Parser: " + warn));
+		}
+	} catch (qi::expectation_failure<iterator_type> const &e) {
+		using boost::spirit::basic_info_walker;
+		std::stringstream                                                   expectation;
+		boost::spirit::simple_printer<std::stringstream>                    pr(expectation);
+		basic_info_walker<boost::spirit::simple_printer<std::stringstream>> walker(pr, e.what_.tag, 0);
+		boost::apply_visitor(walker, e.what_.value);
+		throw PddlSyntaxException(std::string("Syntax Error: ") + e.what() + " expected "
+		                            + expectation.str() + " at " + getErrorContext(iter, end, e.first),
+		                          iter);
+	} catch (PddlSemanticsException &e) {
+		e.prepend("Semantic Error: ");
+		e.append(getErrorContext(iter, end, e.pos).c_str());
+		throw;
+	}
+
+	if (!r) {
+		throw PddlParserException("Parsing PDDL formula string failed!");
+	}
+	return formula;
+}
+
 /** Parse the PDDL domain.
  * @param pddl_domain The PDDL domain as string (not a path)
  * @return A Domain object that contains the parsed domain.
  * @see Domain
  */
 Domain
-PddlParser::parseDomain(const std::string &pddl_domain, bool log_warnings)
+PddlParser::parseDomain(const std::string &pddl_domain)
 {
 	typedef pddl_parser::grammar::domain_parser<iterator_type> grammar;
 	typedef pddl_parser::grammar::pddl_skipper<iterator_type>  skipper;
@@ -85,7 +125,7 @@ PddlParser::parseDomain(const std::string &pddl_domain, bool log_warnings)
 
 	try {
 		r = phrase_parse(iter, end, g, s, dom);
-		for(const auto& warn : g.warnings) {
+		for (const auto &warn : g.warnings) {
 			SPDLOG_WARN(std::string("PDDL-Parser: " + warn));
 		}
 	} catch (qi::expectation_failure<iterator_type> const &e) {
