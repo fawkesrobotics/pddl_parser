@@ -12,9 +12,8 @@ Source: {{{ git_dir_pack }}}
 BuildRequires: g++ boost-devel cmake spdlog-devel
 
 %package devel
-Requires: pddl_parser
+Requires:	%{name}%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 Summary: pddl_parser development files
-Provides: pddl_parser-devel
 
 %description
 A C++ PDDL parser utilizing boost spirit. Provides syntactic and semantic
@@ -37,11 +36,14 @@ This package contains necessary headers files for integrating the pddl_parser
 %ctest
 
 %files
-%doc
-%{_libdir}/*
+%license LICENSE.md
+%{_libdir}/libpddl_parser.so.*
 
 %files devel
-%{_includedir}/*
+%{_includedir}/pddl_parser
+%{_libdir}/libpddl_parser.so
+%{_libdir}/cmake/PddlParser
+%{_libdir}/pkgconfig/pddl_parser.pc
 
 %changelog
 {{{ git_dir_changelog }}}
