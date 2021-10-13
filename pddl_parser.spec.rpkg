@@ -14,7 +14,6 @@ BuildRequires: g++ boost-devel cmake spdlog-devel
 %package devel
 Requires: pddl_parser
 Summary: pddl_parser development files
-Provides: pddl_parser-devel
 
 %description
 A C++ PDDL parser utilizing boost spirit. Provides syntactic and semantic
