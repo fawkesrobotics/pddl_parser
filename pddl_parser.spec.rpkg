@@ -12,7 +12,7 @@ Source: {{{ git_dir_pack }}}
 BuildRequires: g++ boost-devel cmake spdlog-devel
 
 %package devel
-Requires: pddl_parser
+Requires:	%{name}%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 Summary: pddl_parser development files
 
 %description
