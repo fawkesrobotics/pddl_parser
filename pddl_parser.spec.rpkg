@@ -38,10 +38,13 @@ This package contains necessary headers files for integrating the pddl_parser
 
 %files
 %doc
-%{_libdir}/*
+%{_libdir}/libpddl_parser.so.*
 
 %files devel
-%{_includedir}/*
+%{_includedir}/pddl_parser
+%{_libdir}/libpddl_parser.so
+%{_libdir}/cmake/PddlParser
+%{_libdir}/pkgconfig/pddl_parser.pc
 
 %changelog
 {{{ git_dir_changelog }}}
