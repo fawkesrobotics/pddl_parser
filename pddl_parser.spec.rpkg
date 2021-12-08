@@ -38,6 +38,7 @@ This package contains necessary headers files for integrating the pddl_parser
 %files
 %license LICENSE.md
 %{_libdir}/libpddl_parser.so.*
+%{_bindir}/pddl_check
 
 %files devel
 %{_includedir}/pddl_parser
