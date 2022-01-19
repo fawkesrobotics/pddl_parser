@@ -3,17 +3,20 @@ cmake_minimum_required(VERSION 3.12)
 project(pddl_parser VERSION 0.9.0
 	DESCRIPTION "Basic PDDL parser based on boost spirit")
 
+set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-W -Wall -Werror -Wextra -Wpedantic)
 
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system program_options)
 find_package(spdlog REQUIRED)
 
 add_library(pddl_parser SHARED pddl_parser.cpp pddl_semantics.cpp)
 target_link_libraries(pddl_parser PUBLIC Boost::boost Boost::system spdlog::spdlog)
 target_include_directories(
   pddl_parser PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-set_target_properties(pddl_parser PROPERTIES SOVERSION
-                                               ${PROJECT_VERSION_MAJOR})
+set_target_properties(pddl_parser PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+
+add_executable(pddl_check pddl_check.cpp)
+target_link_libraries(pddl_check PRIVATE pddl_parser Boost::program_options)
 
 include(GNUInstallDirs)
 
@@ -23,6 +26,11 @@ install(
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(DIRECTORY include/pddl_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(
+  TARGETS pddl_check
+  EXPORT PddlParserTargets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
