@@ -26,7 +26,7 @@
 #include "pddl_ast.h"
 #include "pddl_semantics.h"
 
-#include <boost/spirit/include/phoenix.hpp>
+#include <boost/phoenix.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/qi_expect.hpp>
 #include <boost/spirit/repository/include/qi_iter_pos.hpp>

@@ -25,6 +25,7 @@
 #include <spdlog/spdlog.h>
 
 #include <fstream>
+#include <sstream>
 #include <streambuf>
 
 namespace pddl_parser {
