@@ -12,7 +12,7 @@ find_package(spdlog REQUIRED)
 add_library(pddl_parser SHARED pddl_parser.cpp pddl_semantics.cpp)
 target_link_libraries(pddl_parser PUBLIC Boost::boost Boost::system spdlog::spdlog)
 target_include_directories(
-  pddl_parser PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  pddl_parser PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>$<INSTALL_INTERFACE:include>)
 set_target_properties(pddl_parser PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
 
 add_executable(pddl_check pddl_check.cpp)
@@ -23,7 +23,8 @@ include(GNUInstallDirs)
 install(
   TARGETS pddl_parser
 	EXPORT PddlParserTargets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  INCLUDES DESTINATION include)
 
 install(DIRECTORY include/pddl_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
