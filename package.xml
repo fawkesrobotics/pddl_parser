@@ -13,6 +13,10 @@
 
   <depend>spdlog</depend>
   <depend>pkg-config</depend>
+  <depend>boost</depend>
+
+  <test_depend>libgmock-dev</test_depend>
+  <test_depend>google-mock</test_depend>
 
   <export>
     <build_type>cmake</build_type>
